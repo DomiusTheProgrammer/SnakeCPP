@@ -1,15 +1,16 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#ifndef
-#include <windows.h>
-#endif
 #include "snake.h"
 #include <conio.h>
 #include <print>
 #include <fstream>
 #include <string>
 #include <ctime>
+
+#ifndef WIN_32
+#include <windows.h>
+#endif
 
 using namespace std;
 
@@ -62,7 +63,8 @@ void save()
         ofstream file("save.save");
         if (file.is_open())
         {
-            file << playerName << '\n' << highscore << '\n';
+            file << playerName << '\n'
+                 << highscore << '\n';
         }
     }
     catch (const std::exception &e)
@@ -251,4 +253,3 @@ int main()
     }
     return 0;
 }
-
