@@ -4,6 +4,7 @@
 #include "snake.h"
 #include <conio.h>
 #include <print>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <ctime>
@@ -27,7 +28,7 @@ const int ENCRYPTION_KEY = 0xABCD1234;
 int foodX, foodY;
 char world[sizeY][sizeX];
 
-// Initialize game world - fill with walls at borders, space inside
+// Initialize game world - fill with walls at borders, space insides
 void initWorld()
 {
     for (int y = 0; y < sizeY; y++)
@@ -55,41 +56,26 @@ void drawWorld()
     }
 }
 
-// Save highscore to file (encrypted)
-void save()
+// The record holder and encrypted score are stored as one record.
+int getHighscore()
 {
-    try
+    ifstream file("saves/save.dat");
+    int encryptedScore = 0;
+    if (!file || !std::getline(file, playerName) || !(file >> encryptedScore))
     {
-        ofstream file("save.save");
-        if (file.is_open())
-        {
-            file << playerName << '\n'
-                 << highscore << '\n';
-        }
+        playerName.clear();
+        return 0;
     }
-    catch (const std::exception &e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+    return encryptedScore ^ ENCRYPTION_KEY;
 }
 
-// Load highscore from file (encrypted)
-int load()
+void setHighscore()
 {
-    try
+    ofstream file("saves/save.dat");
+    if (file)
     {
-        ifstream file("save.save");
-        int score = 0;
-        if (file.is_open())
-        {
-            getline(file, playerName);
-            file >> highscore;
-        }
-        return score;
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << e.what() << '\n';
+        file << playerName << '\n'
+             << (highscore ^ ENCRYPTION_KEY) << '\n';
     }
 }
 
@@ -113,8 +99,32 @@ void hideCursor()
     }
 }
 
+void showGameOver()
+{
+    clearScreen();
+    std::println("Game Over!");
+    std::println("Score: {}", score);
+
+    if (score > highscore)
+    {
+        std::print("New highscore! Enter your name: ");
+        std::getline(std::cin >> std::ws, playerName);
+        highscore = score;
+        setHighscore();
+    }
+
+    std::println("Highscore: {} - {}", playerName.empty() ? "No record" : playerName, highscore);
+    Sleep(2000);
+}
+
 int main()
 {
+    // create saves directory if it doesn't exist
+    std::filesystem::path savesDir("saves");
+    if (!std::filesystem::exists(savesDir))
+    {
+        std::filesystem::create_directory(savesDir);
+    }
     // Initialize random seed for different food positions each run
     srand(time(nullptr));
 
@@ -163,7 +173,7 @@ int main()
                 dy = 0;
             }
         }
-        println("Score: {}", score);
+        std::println("Score: {}", score);
         // Calculate new position
         int newX = snake.getX() + dx;
         int newY = snake.getY() + dy;
@@ -171,20 +181,7 @@ int main()
         // Wall collision
         if (newX <= 0 || newX >= sizeX - 1 || newY <= 0 || newY >= sizeY - 1)
         {
-            // Save highscore if current score is higher
-            if (score > highscore)
-            {
-                highscore = score;
-                setHighscore();
-            }
-            clearScreen();
-            println("Game Over!");
-            println("Score: {}", score);
-            println("Highscore: {}", highscore);
-            println("Geben Sie ihren Namen ein!: ");
-            cin >> playerName;
-            save();
-            Sleep(2000);
+            showGameOver();
             return 0;
         }
 
@@ -193,17 +190,7 @@ int main()
         {
             if (p.first == newX && p.second == newY)
             {
-                // Save highscore if current score is higher
-                if (score > highscore)
-                {
-                    highscore = score;
-                    setHighscore();
-                }
-                clearScreen();
-                println("Game Over!");
-                println("Score: {}", score);
-                println("Highscore: {}", highscore);
-                Sleep(2000);
+                showGameOver();
                 return 0;
             }
         }
@@ -230,17 +217,7 @@ int main()
         }
         if (snake.getX() <= 0 || snake.getX() >= sizeX - 1 || snake.getY() <= 0 || snake.getY() >= sizeY - 1)
         {
-            // Save highscore if current score is higher
-            if (score > highscore)
-            {
-                highscore = score;
-                setHighscore();
-            }
-            clearScreen();
-            println("Game Over!");
-            println("Score: {}", score);
-            println("Highscore: {}", highscore);
-            Sleep(2000);
+            showGameOver();
             return 0;
         }
         // Draw head and food

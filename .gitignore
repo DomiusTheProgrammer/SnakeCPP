@@ -1,0 +1,6 @@
+#builds
+.build/
+.vscode/
+
+#objectes
+saves/
