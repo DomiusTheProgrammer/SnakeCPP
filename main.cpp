@@ -1,7 +1,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#ifndef
 #include <windows.h>
+#endif
 #include "snake.h"
 #include <conio.h>
 #include <print>
