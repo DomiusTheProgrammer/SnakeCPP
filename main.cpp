@@ -119,12 +119,19 @@ void showGameOver()
 
 int main()
 {
+    bool running = true;
+    std::println("Welcome to Snake Game!");
+    std::println("Current highscore: {} - {}", playerName.empty() ? "No record" : playerName, highscore);
+    std::println("Use WASD keys to move the snake. Press any key to start...");
+    std::cin.get(); // Wait for user input to start the game
+
     // create saves directory if it doesn't exist
     std::filesystem::path savesDir("saves");
     if (!std::filesystem::exists(savesDir))
     {
         std::filesystem::create_directory(savesDir);
     }
+
     // Initialize random seed for different food positions each run
     srand(time(nullptr));
 
@@ -146,7 +153,7 @@ int main()
     world[snake.getY()][snake.getX()] = 'O';
 
     // Game loop
-    while (true)
+    do
     {
         // Handle keyboard input
         if (_kbhit())
@@ -227,6 +234,6 @@ int main()
         clearScreen();
         drawWorld();
         Sleep(150);
-    }
+    } while (running);
     return 0;
 }
