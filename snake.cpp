@@ -2,7 +2,8 @@
 #include <conio.h>
 
 // Constructor - add initial head segment
-Snake::Snake(int startX, int startY) : x{startX}, y{startY} {
+Snake::Snake(int startX, int startY) : x{startX}, y{startY} 
+{
      body.push_back({startX, startY});
 }
 
@@ -15,11 +16,11 @@ void Snake::move(int dx, int dy)
      body.push_back({newX, newY});
      if (!growing)
      {
-         body.erase(body.begin());
+          body.erase(body.begin());
      }
      else
      {
-         growing = false;
+          growing = false;
      }
      x = newX;
      y = newY;
@@ -32,6 +33,6 @@ void Snake::grow()
 }
 
 // Getter methods
-const std::vector<std::pair<int, int>>& Snake::getBody() const {return body;}
+const std::vector<std::pair<int, int>> &Snake::getBody() const { return body; }
 int Snake::getX() const { return x; }
 int Snake::getY() const { return y; }

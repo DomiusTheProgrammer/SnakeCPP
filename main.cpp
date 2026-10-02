@@ -39,7 +39,7 @@ void initStart()
     std::println("Current highscore: {} - {}", playerName.empty() ? "No record" : playerName, highscore);
     std::println("Use WASD keys to move the snake. Press any key to start...");
     std::cin.get();         // Wait for user input to start the game
-    std::cout << "\033[2J"; // Clear the console screen
+    std::cout << "\033[2J"; // Clear the console screen with ANSI escape code
 
     // create saves directory if it doesn't exist
     std::filesystem::path savesDir("saves");
@@ -106,11 +106,7 @@ void setHighscore()
 // Move console cursor back to top-left without clearing the whole screen
 void clearScreen()
 {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD cursorPosition = {0, 0};
-    SetConsoleCursorPosition(hConsole, cursorPosition);
-    cout << std::flush; // Ensure the output buffer is flushed
-    cout << "\033[2J";  // ANSI escape code to clear the screen
+    cout << "\033[2J"; // ANSI escape code to clear the screen
 }
 
 // Hide the blinking cursor while the game runs
