@@ -21,12 +21,35 @@ const int sizeY = 20;
 int score = 0;
 int highscore;
 string playerName = "";
+bool running;
 
 // Encryption key for XOR cipher
 const int ENCRYPTION_KEY = 0xABCD1234;
 
 int foodX, foodY;
 char world[sizeY][sizeX];
+
+void initStart()
+{
+    running = true;
+    std::println("Welcome to Snake Game!");
+    std::println("Current highscore: {} - {}", playerName.empty() ? "No record" : playerName, highscore);
+    std::println("Use WASD keys to move the snake. Press any key to start...");
+    std::cin.get(); // Wait for user input to start the game
+
+    // create saves directory if it doesn't exist
+    std::filesystem::path savesDir("saves");
+    if (!std::filesystem::exists(savesDir))
+    {
+        std::filesystem::create_directory(savesDir);
+    }
+
+    // Initialize random seed for different food positions each run
+    srand(time(nullptr));
+
+    // Load highscore from file at start
+    highscore = getHighscore();
+}
 
 // Initialize game world - fill with walls at borders, space insides
 void initWorld()
@@ -119,121 +142,110 @@ void showGameOver()
 
 int main()
 {
-    bool running = true;
-    std::println("Welcome to Snake Game!");
-    std::println("Current highscore: {} - {}", playerName.empty() ? "No record" : playerName, highscore);
-    std::println("Use WASD keys to move the snake. Press any key to start...");
-    std::cin.get(); // Wait for user input to start the game
-
-    // create saves directory if it doesn't exist
-    std::filesystem::path savesDir("saves");
-    if (!std::filesystem::exists(savesDir))
-    {
-        std::filesystem::create_directory(savesDir);
-    }
-
-    // Initialize random seed for different food positions each run
-    srand(time(nullptr));
-
-    // Load highscore from file at start
-    highscore = getHighscore();
-
-    hideCursor();
-    initWorld();
-    Snake snake(sizeX / 2, sizeY / 2);
-
-    // Initialize food position
-    foodX = (sizeX - 2) / 2;
-    foodY = (sizeY - 2) / 2 + 2;
-    world[foodY][foodX] = '°'; // Zeichne Essen beim Start
-
-    // Direction vector
-    int dx = 1, dy = 0;
-
-    world[snake.getY()][snake.getX()] = 'O';
-
-    // Game loop
+    initStart();
+    // Main game loop
     do
     {
-        // Handle keyboard input
-        if (_kbhit())
-        {
-            char key = _getch();
-            if (key == 'w')
-            {
-                dx = 0;
-                dy = -1;
-            }
-            if (key == 's')
-            {
-                dx = 0;
-                dy = 1;
-            }
-            if (key == 'a')
-            {
-                dx = -1;
-                dy = 0;
-            }
-            if (key == 'd')
-            {
-                dx = 1;
-                dy = 0;
-            }
-        }
-        std::println("Score: {}", score);
-        // Calculate new position
-        int newX = snake.getX() + dx;
-        int newY = snake.getY() + dy;
+        hideCursor();
+        initWorld();
+        Snake snake(sizeX / 2, sizeY / 2);
 
-        // Wall collision
-        if (newX <= 0 || newX >= sizeX - 1 || newY <= 0 || newY >= sizeY - 1)
-        {
-            showGameOver();
-            return 0;
-        }
+        // Initialize food position
+        foodX = (sizeX - 2) / 2;
+        foodY = (sizeY - 2) / 2 + 2;
+        world[foodY][foodX] = '°'; // Zeichne Essen beim Start
 
-        // Self collision
-        for (auto &p : snake.getBody())
+        // Direction vector
+        int dx = 1, dy = 0;
+
+        world[snake.getY()][snake.getX()] = 'O';
+
+        // Game loop
+        do
         {
-            if (p.first == newX && p.second == newY)
+            // Handle keyboard input
+            if (_kbhit())
+            {
+                char key = _getch();
+                if (key == 'w')
+                {
+                    dx = 0;
+                    dy = -1;
+                }
+                if (key == 's')
+                {
+                    dx = 0;
+                    dy = 1;
+                }
+                if (key == 'a')
+                {
+                    dx = -1;
+                    dy = 0;
+                }
+                if (key == 'd')
+                {
+                    dx = 1;
+                    dy = 0;
+                }
+            }
+            std::println("Score: {}", score);
+            // Calculate new position
+            int newX = snake.getX() + dx;
+            int newY = snake.getY() + dy;
+
+            // Wall collision
+            if (newX <= 0 || newX >= sizeX - 1 || newY <= 0 || newY >= sizeY - 1)
             {
                 showGameOver();
+                running = false;
                 return 0;
             }
-        }
 
-        // Food eaten
-        if (newX == foodX && newY == foodY)
-        {
-            snake.grow();
-            score += 10;
-            world[foodY][foodX] = ' '; // Alte Essen-Position löschen
-            foodX = rand() % (sizeX - 2) + 1;
-            foodY = rand() % (sizeY - 2) + 1;
-            world[foodY][foodX] = '*'; // Neues Essen zeichnen
-        }
+            // Self collision
+            for (auto &p : snake.getBody())
+            {
+                if (p.first == newX && p.second == newY)
+                {
+                    showGameOver();
+                    running = false;
+                    return 0;
+                }
+            }
 
-        // Update world and render frame
-        initWorld();
-        snake.move(dx, dy);
+            // Food eaten
+            if (newX == foodX && newY == foodY)
+            {
+                snake.grow();
+                score += 10;
+                world[foodY][foodX] = ' '; // Alte Essen-Position löschen
+                foodX = rand() % (sizeX - 2) + 1;
+                foodY = rand() % (sizeY - 2) + 1;
+                world[foodY][foodX] = '*'; // Neues Essen zeichnen
+            }
 
-        // Draw snake
-        for (auto &p : snake.getBody())
-        {
-            world[p.second][p.first] = 'o';
-        }
-        if (snake.getX() <= 0 || snake.getX() >= sizeX - 1 || snake.getY() <= 0 || snake.getY() >= sizeY - 1)
-        {
-            showGameOver();
-            return 0;
-        }
-        // Draw head and food
-        world[snake.getY()][snake.getX()] = 'O';
-        world[foodY][foodX] = '*';
+            // Update world and render frame
+            initWorld();
+            snake.move(dx, dy);
 
-        clearScreen();
-        drawWorld();
-        Sleep(150);
+            // Draw snake
+            for (auto &p : snake.getBody())
+            {
+                world[p.second][p.first] = 'o';
+            }
+            if (snake.getX() <= 0 || snake.getX() >= sizeX - 1 || snake.getY() <= 0 || snake.getY() >= sizeY - 1)
+            {
+                showGameOver();
+                running = false;
+                return 0;
+            }
+            // Draw head and food
+            world[snake.getY()][snake.getX()] = 'O';
+            world[foodY][foodX] = '*';
+
+            clearScreen();
+            drawWorld();
+            Sleep(150);
+        } while (true); // Game loop continues until collision
+        return 0;
     } while (running);
-    return 0;
 }
