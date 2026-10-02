@@ -29,6 +29,9 @@ const int ENCRYPTION_KEY = 0xABCD1234;
 int foodX, foodY;
 char world[sizeY][sizeX];
 
+// predefiniton functions
+void setHighscore();
+
 void initStart()
 {
     running = true;
@@ -46,9 +49,6 @@ void initStart()
 
     // Initialize random seed for different food positions each run
     srand(time(nullptr));
-
-    // Load highscore from file at start
-    highscore = getHighscore();
 }
 
 // Initialize game world - fill with walls at borders, space insides
@@ -108,6 +108,7 @@ void clearScreen()
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD cursorPosition = {0, 0};
     SetConsoleCursorPosition(hConsole, cursorPosition);
+    cout << std::flush; // Ensure the output buffer is flushed
 }
 
 // Hide the blinking cursor while the game runs
@@ -124,6 +125,7 @@ void hideCursor()
 
 void showGameOver()
 {
+    running = false;
     clearScreen();
     std::println("Game Over!");
     std::println("Score: {}", score);
@@ -140,9 +142,31 @@ void showGameOver()
     Sleep(2000);
 }
 
+void restartGame()
+{
+    std::println("Press any R for restart or Q to quit...");
+    char choice = std::cin.get();
+    if (choice == 'r' || choice == 'R')
+    {
+        score = 0;
+        running = true;
+    }
+    else if (choice == 'q' || choice == 'Q')
+    {
+        running = false;
+    }
+    else
+    {
+        std::println("Invalid input. Exiting game.");
+        running = false;
+    }
+}
+
 int main()
 {
+    highscore = getHighscore();
     initStart();
+    clearScreen();
     // Main game loop
     do
     {
@@ -153,7 +177,7 @@ int main()
         // Initialize food position
         foodX = (sizeX - 2) / 2;
         foodY = (sizeY - 2) / 2 + 2;
-        world[foodY][foodX] = '°'; // Zeichne Essen beim Start
+        world[foodY][foodX] = '°'; // Draw food at initial position
 
         // Direction vector
         int dx = 1, dy = 0;
@@ -161,7 +185,7 @@ int main()
         world[snake.getY()][snake.getX()] = 'O';
 
         // Game loop
-        do
+        while (true)
         {
             // Handle keyboard input
             if (_kbhit())
@@ -197,7 +221,7 @@ int main()
             if (newX <= 0 || newX >= sizeX - 1 || newY <= 0 || newY >= sizeY - 1)
             {
                 showGameOver();
-                running = false;
+                restartGame();
                 return 0;
             }
 
@@ -207,7 +231,7 @@ int main()
                 if (p.first == newX && p.second == newY)
                 {
                     showGameOver();
-                    running = false;
+                    restartGame();
                     return 0;
                 }
             }
@@ -235,7 +259,7 @@ int main()
             if (snake.getX() <= 0 || snake.getX() >= sizeX - 1 || snake.getY() <= 0 || snake.getY() >= sizeY - 1)
             {
                 showGameOver();
-                running = false;
+                restartGame();
                 return 0;
             }
             // Draw head and food
@@ -245,7 +269,7 @@ int main()
             clearScreen();
             drawWorld();
             Sleep(150);
-        } while (true); // Game loop continues until collision
-        return 0;
+        } // Game loop continues until collision
     } while (running);
+    return 0;
 }
