@@ -145,23 +145,24 @@ void showGameOver()
 
 void restartGame()
 {
-    std::println("Press R for restart or Q to quit...");
-    char choice;
-    std::cin.ignore(); // Clear input buffer
-    std::cin >> choice;
-    if (choice == 'r' || choice == 'R')
+    while (true)
     {
-        score = 0;
-        running = true;
-    }
-    else if (choice == 'q' || choice == 'Q')
-    {
-        running = false;
-    }
-    else
-    {
-        std::println("Invalid input. Exiting game.");
-        running = false;
+        std::println("Press R to restart or Q to quit...");
+        char choice = _getch();
+
+        if (choice == 'r' || choice == 'R')
+        {
+            score = 0;
+            running = true;
+            return;
+        }
+        if (choice == 'q' || choice == 'Q')
+        {
+            running = false;
+            return;
+        }
+
+        std::println("Invalid input. Please press R or Q.");
     }
 }
 
@@ -219,23 +220,24 @@ int main()
             int newX = snake.getX() + dx;
             int newY = snake.getY() + dy;
 
-            // Wall collision
-            if (newX <= 0 || newX >= sizeX - 1 || newY <= 0 || newY >= sizeY - 1)
+            bool collided = newX <= 0 || newX >= sizeX - 1 ||
+                            newY <= 0 || newY >= sizeY - 1;
+
+            // Self collision
+            for (const auto &segment : snake.getBody())
+            {
+                if (segment.first == newX && segment.second == newY)
+                {
+                    collided = true;
+                    break;
+                }
+            }
+
+            if (collided)
             {
                 showGameOver();
                 restartGame();
-                return 0;
-            }
-
-            // Self collision
-            for (auto &p : snake.getBody())
-            {
-                if (p.first == newX && p.second == newY)
-                {
-                    showGameOver();
-                    restartGame();
-                    return 0;
-                }
+                break;
             }
 
             // Food eaten
@@ -257,12 +259,6 @@ int main()
             for (auto &p : snake.getBody())
             {
                 world[p.second][p.first] = 'o';
-            }
-            if (snake.getX() <= 0 || snake.getX() >= sizeX - 1 || snake.getY() <= 0 || snake.getY() >= sizeY - 1)
-            {
-                showGameOver();
-                restartGame();
-                return 0;
             }
             // Draw head and food
             world[snake.getY()][snake.getX()] = 'O';
