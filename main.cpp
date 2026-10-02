@@ -103,10 +103,13 @@ void setHighscore()
     }
 }
 
-// Move console cursor back to top-left without clearing the whole screen
+// Clear the console and return the cursor to the top-left corner
 void clearScreen()
 {
-    cout << "\033[2J"; // ANSI escape code to clear the screen
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD cursorPosition = {0, 0};
+    SetConsoleCursorPosition(hConsole, cursorPosition);
+    cout << "\033[2J\033[H";
 }
 
 // Hide the blinking cursor while the game runs
@@ -212,7 +215,6 @@ int main()
                     dy = 0;
                 }
             }
-            std::println("Score: {}", score);
             // Calculate new position
             int newX = snake.getX() + dx;
             int newY = snake.getY() + dy;
@@ -267,6 +269,7 @@ int main()
             world[foodY][foodX] = '*';
 
             clearScreen();
+            std::println("Score: {}", score);
             drawWorld();
             Sleep(150);
         } // Game loop continues until collision
