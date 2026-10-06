@@ -140,7 +140,7 @@ void showGameOver()
     }
 
     std::println("Highscore: {} - {}", playerName.empty() ? "No record" : playerName, highscore);
-    Sleep(2000);
+    Sleep(200);
 }
 
 void restartGame()
@@ -183,12 +183,12 @@ int main()
         // Initialize food position
         foodX = (sizeX - 2) / 2;
         foodY = (sizeY - 2) / 2 + 2;
-        world[foodY][foodX] = '°'; // Draw food at initial position
+        world[foodY][foodX] = 'O'; // Draw food at initial position
 
         // Direction vector
         int dx = 1, dy = 0;
 
-        world[snake.getY()][snake.getX()] = 'O';
+        world[snake.getY()][snake.getX()] = '0';
 
         // Game loop
         while (true)
@@ -264,11 +264,11 @@ int main()
             // Draw snake
             for (auto &p : snake.getBody())
             {
-                world[p.second][p.first] = 'o';
+                world[p.second][p.first] = 'O';
             }
             // Draw head and food
-            world[snake.getY()][snake.getX()] = 'O';
-            world[foodY][foodX] = '*';
+            world[snake.getY()][snake.getX()] = '0';
+            world[foodY][foodX] = '+';
 
             clearScreen();
             std::println("Score: {}", score);
