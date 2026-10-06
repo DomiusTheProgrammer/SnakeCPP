@@ -60,7 +60,7 @@ void initWorld()
         for (int x = 0; x < sizeX; x++)
         {
             if (x == 0 || x == sizeX - 1 || y == 0 || y == sizeY - 1)
-                world[y][x] = '#';
+                world[y][x] = '#'; // Wall character
             else
                 world[y][x] = ' ';
         }
@@ -177,6 +177,8 @@ int main()
         hideCursor();
         initWorld();
         Snake snake(sizeX / 2, sizeY / 2);
+        int foodsEaten = 0;
+        double speedMultiplier = 1;
 
         // Initialize food position
         foodX = (sizeX - 2) / 2;
@@ -245,6 +247,10 @@ int main()
             {
                 snake.grow();
                 score += 10;
+                foodsEaten++;
+                if (foodsEaten % 10 == 0 && speedMultiplier < 5)
+                    speedMultiplier += 0.5; // Increase speed every 10 foods eaten
+
                 world[foodY][foodX] = ' '; // Alte Essen-Position löschen
                 foodX = rand() % (sizeX - 2) + 1;
                 foodY = rand() % (sizeY - 2) + 1;
@@ -266,8 +272,9 @@ int main()
 
             clearScreen();
             std::println("Score: {}", score);
+            std::println("Speed: x{}", speedMultiplier);
             drawWorld();
-            Sleep(150);
+            Sleep(150 / speedMultiplier);
         } // Game loop continues until collision
     } while (running);
     return 0;

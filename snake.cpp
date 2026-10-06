@@ -2,7 +2,7 @@
 #include <conio.h>
 
 // Constructor - add initial head segment
-Snake::Snake(int startX, int startY) : x{startX}, y{startY} 
+Snake::Snake(int startX, int startY) : x{startX}, y{startY}
 {
      body.push_back({startX, startY});
 }
